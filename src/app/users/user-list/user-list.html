@@ -1,0 +1,183 @@
+
+
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <h1>PreventSoft</h1>
+  </header>
+
+  <!-- Contenido principal con menú lateral -->
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a routerLink="/dashboard">Inicio</a></li>
+          <li><a routerLink="/users">Usuarios y Perfiles</a></li>
+          <li><a routerLink="/incidente">Incidentes</a></li>
+          <li><a routerLink="/clasificacion">Clasificación de Incidentes</a></li>
+          <!-- <li><a routerLink="/configuracion">Importación de Incidentes</a></li>-->
+          <li><a routerLink="/configuracion">Proyectos</a></li>
+          <li><a routerLink="/configuracion">Recomendaciones</a></li>
+          <li><a routerLink="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Contenido dinámico -->
+    <div class="content">
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h2>Usuarios</h2>
+              <button class="btn btn-primary" (click)="newUser()">
+                <i class="bi bi-person-plus-fill"></i> Nuevo Usuario
+              </button>
+              <!-- Modal -->
+              <div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <form (ngSubmit)="submitUser()" #userForm="ngForm">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="newUserModalLabel">
+                          {{ isEditMode ? 'Editar Usuario' : 'Registrar Usuario' }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                      </div>
+
+                      <div class="modal-body">
+                        <!-- Nombre -->
+                        <div class="mb-3">
+                          <label>Nombre</label>
+                          <input
+                            class="form-control"
+                            [(ngModel)]="newUserData.full_name"
+                            name="full_name"
+                            required
+                          />
+                        </div>
+
+                        <!-- Email (solo en registro) -->
+                        <div *ngIf="!isEditMode" class="mb-3">
+                          <label>Email</label>
+                          <input
+                            type="email"
+                            class="form-control"
+                            [(ngModel)]="newUserData.email"
+                            name="email"
+                            required
+                          />
+                        </div>
+
+                        <!-- Contraseña (solo en registro) -->
+                        <div *ngIf="!isEditMode" class="mb-3">
+                          <label>Contraseña</label>
+                          <input
+                            type="password"
+                            class="form-control"
+                            [(ngModel)]="newUserData.password"
+                            name="password"
+                            required
+                          />
+                        </div>
+
+                        <!-- Perfil -->
+                        <div class="mb-3">
+                          <label>Perfil</label>
+                          <select
+                            class="form-select"
+                            [(ngModel)]="newUserData.profile_id"
+                            name="profile_id"
+                            required
+                          >
+                            <option *ngFor="let profile of profiles" [value]="profile.id">
+                              {{ profile.name }}
+                            </option>
+                          </select>
+                        </div>
+
+                        <!-- Estado -->
+                        <div class="mb-3">
+                          <label>Estado</label>
+                          <select
+                            class="form-select"
+                            [(ngModel)]="newUserData.is_active"
+                            name="is_active"
+                            required
+                          >
+                            <option [value]="true">Activo</option>
+                            <option [value]="false">Inactivo</option>
+                          </select>
+                        </div>
+
+                        <!-- Mensajes de error -->
+                        <div *ngIf="errorMessages.length > 0" class="alert alert-danger">
+                          <ul class="mb-0">
+                            <li *ngFor="let msg of errorMessages">{{ msg }}</li>
+                          </ul>
+                        </div>
+                      </div>
+
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+                          {{ isEditMode ? 'Guardar cambios' : 'Guardar' }}
+                        </button>
+                      </div>
+                    </form>
+                      <div *ngIf="errorMessages.length" class="alert alert-danger">
+                        <ul class="mb-0">
+                          <li *ngFor="let msg of errorMessages">{{ msg }}</li>
+                        </ul>
+                      </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Usuario</th>
+                    <th>Email</th>
+                    <th>Perfil</th>
+                    <th>Estado</th>
+                    <th style="width: 130px;">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let user of users">
+                    <td>{{ user.full_name }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.profile.name }}</td>
+                    <td>
+                      <span [class]="user.is_active ? 'badge bg-success' : 'badge bg-danger'">
+                        {{ user.is_active ? 'Activo' : 'Inactivo' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-warning me-1" (click)="editUser(user.id)">
+                        <i class="bi bi-pencil-fill"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="deleteUser(user.id)">
+                        <i class="bi bi-trash-fill"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+      </div>
+       <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 PreventSoft. Todos los derechos reservados.</p>
+  </footer>
+</div>
+<div *ngIf="showSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+  Usuario registrado satisfactoriamente.
+  <button type="button" class="btn-close" (click)="showSuccess = false" aria-label="Close"></button>
+</div>

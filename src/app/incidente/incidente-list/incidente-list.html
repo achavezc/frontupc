@@ -1,0 +1,162 @@
+
+
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <h1>PreventSoft</h1>
+  </header>
+
+  <!-- Contenido principal con menú lateral -->
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a routerLink="/dashboard">Inicio</a></li>
+          <li><a routerLink="/users">Usuarios y Perfiles</a></li>
+          <li><a routerLink="/incidente">Incidentes</a></li>
+          <li><a routerLink="/clasificacion">Clasificación de Incidentes</a></li>
+          <!-- <li><a routerLink="/configuracion">Importación de Incidentes</a></li>-->
+          <li><a routerLink="/configuracion">Proyectos</a></li>
+          <li><a routerLink="/configuracion">Recomendaciones</a></li>
+          <li><a routerLink="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </aside>
+   <!-- Contenido dinámico -->
+    <div class="content">
+      <div class="container mt-4">
+        <div class="d-flex justify-content-between mb-3">
+          <h2>Incidentes</h2>
+          <button class="btn btn-primary" (click)="newEntry()">Nuevo Incidente</button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover">
+            <thead class="table-light">
+              <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Sistema</th>
+                <th>Módulo</th>
+                <th>Usuario</th>
+                <th>Descripción</th>
+                <th>Tiempo Estimado</th>
+                <th>Fecha Solución</th>
+                <th>Hora Solución</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let i of incidentes">
+                <td>{{ i.fecha }}</td>
+                <td>{{ i.hora }}</td>
+                <td>{{ i.sistema.nombre }}</td>
+                <td>{{ i.proyecto_modulo.nombre }}</td>
+                <td>{{ i.usuario_reportador }}</td>
+                <td>{{ i.descripcion }}</td>
+                <td>{{ i.tiempo_estimado }}</td>
+                <td>{{ i.fecha_solucion }}</td>
+                <td>{{ i.hora_solucion }}</td>
+                <td>
+                  <button class="btn btn-sm btn-warning me-1" (click)="editEntry(i.id)">
+                    <i class="bi bi-pencil-fill"></i>
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteEntry(i.id)">
+                    <i class="bi bi-trash-fill"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal fade" id="incidenteModal" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <form (ngSubmit)="submitEntry()">
+                <div class="modal-header">
+                  <h5 class="modal-title">{{ isEditMode ? 'Editar' : 'Registrar' }} Incidente</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body row g-3">
+                  <div class="col-md-6">
+                    <label>Fecha</label>
+                    <input type="date" class="form-control" [(ngModel)]="newIncidente.fecha" name="fecha" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label>Hora</label>
+                    <input type="time" class="form-control" [(ngModel)]="newIncidente.hora" name="hora" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Sistema</label>
+                    <select class="form-select" [(ngModel)]="newIncidente.sistema_id" name="sistema_id" required>
+                      <option *ngFor="let s of sistemas" [value]="s.id">{{ s.nombre }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Módulo</label>
+                    <select class="form-select" [(ngModel)]="newIncidente.proyectomodulo_id" name="proyectomodulo_id" required>
+                      <option *ngFor="let m of modulos" [value]="m.id">{{ m.nombre }}</option>
+                    </select>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Usuario Reportador</label>
+                    <input class="form-control" [(ngModel)]="newIncidente.usuario_reportador" name="usuario_reportador" required>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Tiempo Estimado (minutos o horas)</label>
+                    <input type="number" class="form-control" [(ngModel)]="newIncidente.tiempo_estimado" name="tiempo_estimado" min="0">
+                  </div>
+
+                  <div class="col-md-12">
+                    <label>Descripción</label>
+                    <textarea class="form-control" [(ngModel)]="newIncidente.descripcion" name="descripcion"></textarea>
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Fecha Solución</label>
+                    <input type="date" class="form-control" [(ngModel)]="newIncidente.fecha_solucion" name="fecha_solucion">
+                  </div>
+
+                  <div class="col-md-6">
+                    <label>Hora Solución</label>
+                    <input type="time" class="form-control" [(ngModel)]="newIncidente.hora_solucion" name="hora_solucion">
+                  </div>
+
+                  <div *ngIf="errorMessages.length" class="alert alert-danger mt-2">
+                    <ul>
+                      <li *ngFor="let msg of errorMessages">{{ msg }}</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="modal-footer">
+                  <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">Cancelar</button>
+                  <button class="btn btn-primary" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+       <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 PreventSoft. Todos los derechos reservados.</p>
+  </footer>
+</div>
+<div *ngIf="showSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+  Usuario registrado satisfactoriamente.
+  <button type="button" class="btn-close" (click)="showSuccess = false" aria-label="Close"></button>
+</div>

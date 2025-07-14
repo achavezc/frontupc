@@ -1,0 +1,145 @@
+
+
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <h1>PreventSoft</h1>
+  </header>
+
+  <!-- Contenido principal con menú lateral -->
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a routerLink="/dashboard">Inicio</a></li>
+          <li><a routerLink="/users">Usuarios y Perfiles</a></li>
+          <li><a routerLink="/incidente">Incidentes</a></li>
+          <li><a routerLink="/clasificacion">Clasificación de Incidentes</a></li>
+          <!-- <li><a routerLink="/configuracion">Importación de Incidentes</a></li>-->
+          <li><a routerLink="/configuracion">Proyectos</a></li>
+          <li><a routerLink="/configuracion">Recomendaciones</a></li>
+          <li><a routerLink="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </aside>
+   <!-- Contenido dinámico -->
+    <div class="content">
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Clasificación de Incidentes</h2>
+            <button class="btn btn-primary" (click)="newItem()">
+                <i class="bi bi-plus-circle-fill"></i> Nueva Clasificación
+            </button>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="newClasificacionModal" tabindex="-1" aria-labelledby="newClasificacionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <form (ngSubmit)="submit()" #form="ngForm">
+                    <div class="modal-header">
+                    <h5 class="modal-title" id="newClasificacionModalLabel">
+                        {{ isEditMode ? 'Editar Clasificación' : 'Registrar Clasificación' }}
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                    </div>
+                    <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Incidente</label>
+                        <select class="form-select" required [(ngModel)]="newClasificacion.incidente_id" name="incidente_id">
+                        <option *ngFor="let i of incidentes" [value]="i.id">{{ i.descripcion }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Fase del Proyecto</label>
+                        <select class="form-select" required [(ngModel)]="newClasificacion.faseproyecto_id" name="faseproyecto_id">
+                        <option *ngFor="let f of fases" [value]="f.id">{{ f.nombre }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Impacto</label>
+                        <select class="form-select" required [(ngModel)]="newClasificacion.impacto_id" name="impacto_id">
+                        <option *ngFor="let i of impactos" [value]="i.id">{{ i.nombre }}</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label>Tipo</label>
+                        <select class="form-select" required [(ngModel)]="newClasificacion.tipo_id" name="tipo_id">
+                        <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }}</option>
+                        </select>
+                    </div>
+
+                 
+
+                    <div *ngIf="errorMessages.length > 0" class="alert alert-danger">
+                        <ul class="mb-0">
+                        <li *ngFor="let msg of errorMessages">{{ msg }}</li>
+                        </ul>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+                        {{ isEditMode ? 'Guardar cambios' : 'Guardar' }}
+                    </button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Incidente</th>
+                    <th>Fase</th>
+                    <th>Impacto</th>
+                    <th>Tipo</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                    <th style="width: 130px;">Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let item of clasificaciones">
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.incidente.descripcion }}</td>
+                    <td>{{ item.faseproyecto.nombre }}</td>
+                    <td>{{ item.impacto.nombre }}</td>
+                    <td>{{ item.tipo.nombre }}</td>
+                    <td>{{ item.usuario_registro }}</td>
+                    <td>{{ item.fecha_registro | date: 'short' }}</td>
+                    <td>
+                    <button class="btn btn-sm btn-warning me-1" (click)="editItem(item)">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteItem(item.id!)">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+        </div>
+         <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 PreventSoft. Todos los derechos reservados.</p>
+  </footer>
+</div>
+<div *ngIf="showSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+  Usuario registrado satisfactoriamente.
+  <button type="button" class="btn-close" (click)="showSuccess = false" aria-label="Close"></button>
+</div>

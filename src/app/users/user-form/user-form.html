@@ -1,0 +1,20 @@
+<h2>{{ editing ? 'Editar Usuario' : 'Nuevo Usuario' }}</h2>
+<form [formGroup]="form" (ngSubmit)="save()">
+  <label>Email</label>
+  <input formControlName="email" />
+
+  <label *ngIf="!editing">Contraseña</label>
+  <input *ngIf="!editing" type="password" formControlName="password" />
+
+  <label>Nombre completo</label>
+  <input formControlName="full_name" />
+
+  <label>ID Perfil</label>
+  <input type="number" formControlName="profile_id" />
+
+  <label>Activo</label>
+  <input type="checkbox" formControlName="is_active" />
+
+  <button type="submit">Guardar</button>
+  <button type="button" (click)="cancel()">Cancelar</button>
+</form>
