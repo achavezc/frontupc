@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { NgZone } from '@angular/core';
+import Swal from 'sweetalert2';
 
 interface Profile {
   id: number;
@@ -65,7 +66,7 @@ export class UserListComponent implements OnInit {
   isEditMode = false;
   editingUserId: number | null = null;
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router,private zone: NgZone) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -74,7 +75,11 @@ export class UserListComponent implements OnInit {
 
   loadUsers() {
     this.http.get<User[]>('http://localhost:8000/admin/users?skip=0&limit=100')
-      .subscribe(res => this.users = res);
+      .subscribe(res => {
+        this.zone.run(() => {
+          this.users = res;
+        });
+      });
   }
 
   loadProfiles() {
@@ -82,11 +87,31 @@ export class UserListComponent implements OnInit {
       .subscribe(res => this.profiles = res);
   }
 
+ 
   deleteUser(id: number) {
-    if (confirm('¿Eliminar usuario?')) {
-      this.http.delete(`http://localhost:8000/admin/users/${id}`)
-        .subscribe(() => this.loadUsers());
-    }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Este usuario se eliminará permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:8000/admin/users/${id}`).subscribe(() => {
+          this.loadUsers();
+          Swal.fire({
+            title: 'Eliminado',
+            text: 'El usuario ha sido eliminada correctamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        });
+      }
+    });
   }
 
   newUser() {
@@ -133,7 +158,13 @@ export class UserListComponent implements OnInit {
         next: () => {
           this.closeModal();
           this.loadUsers();
-          alert('Usuario actualizado correctamente.');
+          Swal.fire({
+                        icon: 'success',
+                        title: 'Usuario actualizado',
+                        text: 'Usuario actualizado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                      });
         },
         error: err => {
           this.handleApiError(err);
@@ -144,7 +175,14 @@ export class UserListComponent implements OnInit {
         next: () => {
           this.closeModal();
           this.loadUsers();
-          alert('Usuario registrado correctamente.');
+          
+              Swal.fire({
+                    icon: 'success',
+                    title: 'Usuario registrado',
+                    text: 'Usuario registrado correctamente.',
+                    timer: 2000,
+                    showConfirmButton: false
+                      });
         },
         error: err => {
           this.handleApiError(err);

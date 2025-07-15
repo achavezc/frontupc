@@ -1,0 +1,149 @@
+
+
+<div class="layout">
+  <!-- Header -->
+  <header class="header">
+    <h1>PreventSoft</h1>
+  </header>
+
+  <!-- Contenido principal con menú lateral -->
+  <div class="main">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <li><a routerLink="/dashboard">Inicio</a></li>
+          <li><a routerLink="/users">Usuarios y Perfiles</a></li>
+          <li><a routerLink="/incidente">Incidentes</a></li>
+          <li><a routerLink="/clasificacion">Clasificación de Incidentes</a></li>
+          <!-- <li><a routerLink="/configuracion">Importación de Incidentes</a></li>-->
+          <li><a routerLink="/proyecto">Proyectos</a></li>
+          <li><a routerLink="/recomendacion">Recomendaciones</a></li>
+          <li><a routerLink="/logout">Cerrar sesión</a></li>
+        </ul>
+      </nav>
+    </aside>
+   <!-- Contenido dinámico -->
+
+    <div class="content">
+        <div class="container mt-4">
+            <div class="d-flex justify-content-between mb-3">
+                <h2>Recomendaciones</h2>
+                <button class="btn btn-primary" (click)="newItem()">Nueva Recomendación</button>
+            </div>
+
+            <div class="modal fade" id="newRecomendacionModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog">
+                <div class="modal-content">
+                    <form (ngSubmit)="submitForm()" #form="ngForm">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ isEditMode ? 'Editar' : 'Registrar' }} Recomendación</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-3">
+                        <label>Descripción</label>
+                        <textarea class="form-control" [(ngModel)]="newRecomendacion.recomendacion" name="recomendacion" required></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                        <label>Incidente</label>
+                        <select class="form-select" [(ngModel)]="newRecomendacion.incidente_id" name="incidente_id" required>
+                            <option *ngFor="let i of incidentes" [value]="i.id">{{ i.descripcion }}</option>
+                        </select>
+                        </div>
+
+                        <div class="mb-3">
+                        <label>Prioridad</label>
+                        <select class="form-select" [(ngModel)]="newRecomendacion.prioridad_id" name="prioridad_id" required>
+                            <option *ngFor="let p of prioridades" [value]="p.id">{{ p.nombre }}</option>
+                        </select>
+                        </div>
+
+                        <div class="mb-3">
+                        <label>Fase Proyecto</label>
+                        <select class="form-select" [(ngModel)]="newRecomendacion.faseproyecto_id" name="faseproyecto_id" required>
+                            <option *ngFor="let f of fases" [value]="f.id">{{ f.nombre }}</option>
+                        </select>
+                        </div>
+
+                        <div class="mb-3">
+                        <label>Tipo Acción</label>
+                        <select class="form-select" [(ngModel)]="newRecomendacion.tipoaccion_id" name="tipoaccion_id" required>
+                            <option *ngFor="let t of tipoAcciones" [value]="t.id">{{ t.nombre }}</option>
+                        </select>
+                        </div>
+
+                        <div class="mb-3">
+                        <label>Frecuencia</label>
+                        <select class="form-select" [(ngModel)]="newRecomendacion.frecuencia_id" name="frecuencia_id" required>
+                            <option *ngFor="let f of frecuencias" [value]="f.id">{{ f.nombre }}</option>
+                        </select>
+                        </div>
+
+                        <div *ngIf="errorMessages.length" class="alert alert-danger">
+                        <ul>
+                            <li *ngFor="let msg of errorMessages">{{ msg }}</li>
+                        </ul>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">
+                        {{ isEditMode ? 'Guardar cambios' : 'Guardar' }}
+                        </button>
+                    </div>
+                    </form>
+                </div>
+                </div>
+            </div>
+
+            <table class="table table-bordered">
+                <thead class="table-light">
+                <tr>
+                    <th>Recomendación</th>
+                    <th>Incidente</th>
+                    <th>Prioridad</th>
+                    <th>Fase</th>
+                    <th>Tipo Acción</th>
+                    <th>Frecuencia</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let r of recomendaciones">
+                    <td>{{ r.recomendacion }}</td>
+                    <td>{{ r.incidente.descripcion }}</td>
+                    <td>{{ r.prioridad.nombre }}</td>
+                    <td>{{ r.fase_proyecto.nombre }}</td>
+                    <td>{{ r.tipo_accion.nombre }}</td>
+                    <td>{{ r.frecuencia.nombre }}</td>
+                    <td>
+                    <button class="btn btn-sm btn-warning me-1" (click)="editItem(r)">
+                        <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" (click)="deleteItem(r.id)">
+                        <i class="bi bi-trash-fill"></i>
+                    </button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+
+      <router-outlet></router-outlet>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>&copy; 2025 PreventSoft. Todos los derechos reservados.</p>
+  </footer>
+</div>
+<div *ngIf="showSuccess" class="alert alert-success alert-dismissible fade show" role="alert">
+  Usuario registrado satisfactoriamente.
+  <button type="button" class="btn-close" (click)="showSuccess = false" aria-label="Close"></button>
+</div>

@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NgZone } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+import Swal from 'sweetalert2';
 
 interface ComboOption {
   id: number;
@@ -59,6 +61,7 @@ export class ClasificacionListComponent implements OnInit {
   impactos: ComboOption[] = [];
   tipos: ComboOption[] = [];
   errorMessages: string[] = [];
+  toastMessage: string | null = null;
 
   isEditMode = false;
   editingId: number | null = null;
@@ -74,7 +77,7 @@ export class ClasificacionListComponent implements OnInit {
     fecha_actualizacion: ''
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private zone: NgZone,private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.loadClasificaciones();
@@ -83,8 +86,13 @@ export class ClasificacionListComponent implements OnInit {
 
   loadClasificaciones() {
     this.http.get<Clasificacion[]>('http://localhost:8000/clasificacion/')
-      .subscribe(res => this.clasificaciones = res);
+      .subscribe(res => {
+        this.zone.run(() => {
+          this.clasificaciones = res;
+        });
+      });
   }
+
 
   loadCombos() {
     this.http.get<IncidenteOption[]>('http://localhost:8000/clasificacion/incidentecombo').subscribe(res => this.incidentes = res);
@@ -120,12 +128,32 @@ export class ClasificacionListComponent implements OnInit {
     this.openModal();
   }
 
-  deleteItem(id: number) {
-    if (confirm('¿Eliminar esta clasificación?')) {
-      this.http.delete(`http://localhost:8000/clasificacion/${id}`).subscribe(() => this.loadClasificaciones());
-    }
-  }
 
+  deleteItem(id: number) {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta clasificación se eliminará permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:8000/clasificacion/${id}`).subscribe(() => {
+          this.loadClasificaciones();
+          Swal.fire({
+            title: 'Eliminado',
+            text: 'La clasificación ha sido eliminada correctamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        });
+      }
+    });
+  }
   submit() {
     this.errorMessages = [];
 
@@ -135,6 +163,15 @@ export class ClasificacionListComponent implements OnInit {
           next: () => {
             this.closeModal();
             this.loadClasificaciones();
+            // this.showToast('Clasificación actualizado correctamente.');
+                 // Mostrar éxito
+            Swal.fire({
+              icon: 'success',
+              title: 'Clasificación actualizado',
+              text: 'Clasificación actualizado correctamente.',
+              timer: 2000,
+              showConfirmButton: false
+            });
           },
           error: err => this.handleApiError(err)
         });
@@ -149,6 +186,13 @@ export class ClasificacionListComponent implements OnInit {
           next: () => {
             this.closeModal();
             this.loadClasificaciones();
+              Swal.fire({
+              icon: 'success',
+              title: 'Clasificación registrado',
+              text: 'Clasificación registrado correctamente.',
+              timer: 2000,
+              showConfirmButton: false
+            });
           },
           error: err => this.handleApiError(err)
         });

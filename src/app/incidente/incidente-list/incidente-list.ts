@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { NgZone } from '@angular/core';
+import Swal from 'sweetalert2';
 
 interface Sistema {
   id: number;
@@ -88,16 +89,21 @@ export class IncidenteListComponent implements OnInit {
   editingId: number | null = null;
   errorMessages: string[] = [];
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient,private zone: NgZone) {}
 
   ngOnInit() {
     this.loadIncidentes();
     this.loadCombos();
   }
 
+
   loadIncidentes() {
     this.http.get<Incidente[]>('http://localhost:8000/incidente/incidentes')
-      .subscribe(res => this.incidentes = res);
+      .subscribe(res => {
+        this.zone.run(() => {
+          this.incidentes = res;
+        });
+      });
   }
 
   loadCombos() {
@@ -141,11 +147,31 @@ export class IncidenteListComponent implements OnInit {
     this.openModal();
   }
 
+
   deleteEntry(id: number) {
-    if (confirm('¿Eliminar incidente?')) {
-      this.http.delete(`http://localhost:8000/incidente/incidentes/${id}`)
-        .subscribe(() => this.loadIncidentes());
-    }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Este incidente se eliminará permanentemente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.http.delete(`http://localhost:8000/incidente/incidentes/${id}`).subscribe(() => {
+          this.loadIncidentes();
+          Swal.fire({
+            title: 'Eliminado',
+            text: 'El incidente ha sido eliminado correctamente.',
+            icon: 'success',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        });
+      }
+    });
   }
 
   submitEntry() {
@@ -155,7 +181,13 @@ export class IncidenteListComponent implements OnInit {
           next: () => {
             this.closeModal();
             this.loadIncidentes();
-             alert('Incidente actualizado correctamente.');
+              Swal.fire({
+                           icon: 'success',
+                           title: 'Incidente actualizado',
+                           text: 'Incidente actualizado correctamente.',
+                           timer: 2000,
+                           showConfirmButton: false
+                         });
           },
           error: () => {
             this.errorMessages = ['Error al actualizar el incidente.'];
@@ -172,7 +204,13 @@ export class IncidenteListComponent implements OnInit {
           next: () => {
             this.closeModal();
             this.loadIncidentes();
-            alert('Incidente registrado correctamente.');
+              Swal.fire({
+                          icon: 'success',
+                          title: 'Incidente registrado',
+                          text: 'Incidente registrado correctamente.',
+                          timer: 2000,
+                          showConfirmButton: false
+                        });
           },
           error: () => {
             this.errorMessages = ['Error al crear el incidente.'];
